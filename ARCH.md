@@ -77,7 +77,16 @@ Em `TodoModel.fromJson()` dentro de `data/models/`. A entidade `Todo` (domain) n
 
 - Como você tratou erros?
 
-- `TodoRemoteDataSource` lança `Exception` para HTTP != 2xx.
-- `TodoRepositoryImpl` deixa propagar (não engole).
-- `TodoViewModel` captura e expõe via `errorMessage` (String) para a UI.
-- Rollback otimista em `toggleCompleted`: o item é revertido localmente se a chamada remota falhar.
+O projeto original tinha os arquivos com responsabilidades corretas mas nas pastas erradas. O processo foi:
+app_errors.dart: screens/ → core/errors/
+todo_local_datasource.dart: screens/ → data/datasources/
+todo_remote_datasource.dart: utils/ → data/datasources/
+todo_repository.dart (interface): services/ → data/repositories/
+todo_model.dart: widgets/ → data/models/
+E os imports relativos foram corrigidos por sed para refletir os novos caminhos.
+Os arquivos foram reescritos diretamente nos novos caminhos com imports já corretos, e as pastas antigas foram deletadas. As mudanças estruturais principais foram:
+TodoViewModel passou a depender da interface TodoRepository (domain), não da impl concreta — isso foi uma mudança real no código, não só de pasta.
+TodoRepositoryImpl passou a receber remote e local por injeção no construtor, em vez de instanciar diretamente dentro da classe.
+Os providers foram movidos de main.dart para app_root.dart, deixando o main() com apenas uma linha.
+As pastas services/, utils/, screens/ (datasource), ui/, viewmodels/ e widgets/ foram eliminadas e substituídas pela hierarquia features/todos/{domain,data,presentation}.
+
